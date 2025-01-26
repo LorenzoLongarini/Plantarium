@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-plantairium-dev-e7ebf-authRole",
+      "UnauthRoleArn": "arn:aws:iam::148761680686:role/amplify-plantairium-dev-e7ebf-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::148761680686:role/amplify-plantairium-dev-e7ebf-authRole",
+      "Region": "eu-north-1",
+      "DeploymentBucketName": "amplify-plantairium-dev-e7ebf-deployment",
+      "UnauthRoleName": "amplify-plantairium-dev-e7ebf-unauthRole",
+      "StackName": "amplify-plantairium-dev-e7ebf",
+      "StackId": "arn:aws:cloudformation:eu-north-1:148761680686:stack/amplify-plantairium-dev-e7ebf/3c9b14f0-dbd8-11ef-9a88-0e2fc5458eff",
+      "AmplifyAppId": "d39s6k7ew8rrhr"
+    },
+    "categories": {
+      "auth": {
+        "plantairiumf36851f7": {}
+      }
+    }
+  }
+}
