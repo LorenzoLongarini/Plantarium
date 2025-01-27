@@ -3,6 +3,7 @@ import 'package:flutter_login/flutter_login.dart';
 import 'package:plantairium/common/utils/colors.dart';
 import 'package:plantairium/features/account/ui/account.dart';
 import 'package:plantairium/features/plants/ui/plant.dart';
+import 'package:plantairium/features/sensors/ui/sensors.dart';
 class Base extends StatefulWidget {
   const Base({super.key, this.title, this.signupData});
   final String? title;
@@ -26,7 +27,7 @@ class _BaseState extends State<Base> {
             // physics: constNeverScrollableScrollPhysics(),
             controller: _controller,
             children: const [
-              PlantsView(),
+              SensorsView(),
               Account(),
             ],
             onPageChanged: (value) => setState(() {

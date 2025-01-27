@@ -76,11 +76,13 @@ class LoginController extends _$LoginController {
         final loginService = ref.read(loginAPIServiceProvider);
 
         await loginService.verifyCode(data: data, code: code);
+
       });
-      return '';
-    } on AuthException catch (e) {
-      return 'Error signing up: ${e.message}';
+      
+    } on Exception catch (e) {
+      return 'Error signing up: ${e.toString()}';
     }
+    return state.hasError ? 'Error' : '';
   }
 
   Future<String?> resendCode(SignupData data) async {

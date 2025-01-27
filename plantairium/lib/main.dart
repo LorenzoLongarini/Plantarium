@@ -6,12 +6,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plantairium/amplifyconfiguration.dart';
 import 'package:plantairium/app.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:plantairium/common/navigation/router/router.dart';
 import 'package:plantairium/models/ModelProvider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     await _configureAmplify();
+    await authNotifier.checkSession();
     await dotenv.load(fileName: ".env");
   } on AmplifyAlreadyConfiguredException {
     debugPrint('Amplify configuration failed.');
@@ -28,7 +30,7 @@ Future<void> _configureAmplify() async {
   try {
     await Amplify.addPlugins([
       AmplifyAuthCognito(),
-      AmplifyAPI(
+      // AmplifyAPI(
         // modelProvider: ModelProvider.instance,
         // subscriptionOptions: GraphQLSubscriptionOptions(
         //   retryOptions: RetryOptions(
@@ -36,7 +38,7 @@ Future<void> _configureAmplify() async {
         //     maxAttempts: double.maxFinite.toInt(),
         //   ),
         // ),
-      ),
+      // ),
       // AmplifyStorageS3(),
     ]);
     await Amplify.configure(amplifyconfig);

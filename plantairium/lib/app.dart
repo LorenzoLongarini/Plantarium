@@ -21,23 +21,21 @@ class _AppState extends State<App> {
     return Consumer(
       builder: (context, ref, child) {
         final systemProvider = ref.watch(systemServiceProvider);
-        return Authenticator(
-          child: MaterialApp.router(
-            routerConfig: router,
-            themeMode: systemProvider ? ThemeMode.light : ThemeMode.dark,
-            theme: ThemeData(
-              iconTheme: IconThemeData(
-                color: Palette.primary,
-              ),
-              colorScheme: ColorScheme.fromSwatch(
-                primarySwatch: colors.primaryColor,
-              ).copyWith(
-                surface: systemProvider ? Palette.white : Colors.black,
-              ),
-              appBarTheme: AppBarTheme(
-                backgroundColor: systemProvider ? Palette.white : Colors.black,
-                foregroundColor: systemProvider ? Colors.black : Colors.white,
-              ),
+        return MaterialApp.router(
+          routerConfig: router,
+          themeMode: systemProvider ? ThemeMode.light : ThemeMode.dark,
+          theme: ThemeData(
+            iconTheme: IconThemeData(
+              color: Palette.primary,
+            ),
+            colorScheme: ColorScheme.fromSwatch(
+              primarySwatch: colors.primaryColor,
+            ).copyWith(
+              surface: systemProvider ? Palette.white : Colors.black,
+            ),
+            appBarTheme: AppBarTheme(
+              backgroundColor: systemProvider ? Palette.white : Colors.black,
+              foregroundColor: systemProvider ? Colors.black : Colors.white,
             ),
           ),
         );

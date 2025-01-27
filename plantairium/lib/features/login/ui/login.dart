@@ -4,15 +4,14 @@ import 'package:flutter_login/flutter_login.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
+import 'package:another_flushbar/flushbar.dart';
 import 'package:plantairium/common/navigation/router/routes.dart';
 import 'package:plantairium/common/utils/colors.dart';
 import 'package:plantairium/common/utils/env_vars.dart';
 import 'package:plantairium/features/login/controller/login_controller.dart';
 
 class Login extends ConsumerStatefulWidget {
-  const Login({
-    super.key,
-  });
+  const Login({Key? key}) : super(key: key);
 
   @override
   ConsumerState<Login> createState() => _LoginState();
@@ -56,20 +55,31 @@ class _LoginState extends ConsumerState<Login> {
         return ref.read(loginControllerProvider.notifier).onSignUp(data);
       },
       onConfirmSignup: (code, data) async {
-        return ref.read(loginControllerProvider.notifier).verifyCode(
-              data: data,
-              code: code,
-            );
+       return  ref.read(loginControllerProvider.notifier).verifyCode(data: data, code: code);
+        // if (result == null) {
+        //   context.goNamed(AppRoute.home.name);
+        // } else {
+        //   // Mostra un messaggio di errore
+        //   Flushbar(
+        //     message: result,
+        //     duration: Duration(seconds: 3),
+        //   ).show(context);
+        // }
       },
       onRecoverPassword: (String data) {
-        return ref
-            .read(loginControllerProvider.notifier)
-            .onRecoverPassword(data);
+        return ref.read(loginControllerProvider.notifier).onRecoverPassword(data);
       },
       onConfirmRecover: (code, data) async {
-        return ref
-            .read(loginControllerProvider.notifier)
-            .onConfirmRecover(code: code, data: data);
+        final result = await ref.read(loginControllerProvider.notifier).onConfirmRecover(code: code, data: data);
+        if (result == null) {
+          context.goNamed(AppRoute.home.name);
+        } else {
+          // Mostra un messaggio di errore
+          Flushbar(
+            message: result,
+            duration: Duration(seconds: 3),
+          )..show(context);
+        }
       },
       onResendCode: (data) async {
         return ref.read(loginControllerProvider.notifier).resendCode(data);
@@ -77,11 +87,11 @@ class _LoginState extends ConsumerState<Login> {
       onSubmitAnimationCompleted: () async {
         final session = await Amplify.Auth.fetchAuthSession();
 
-        session.isSignedIn
-            ? context.goNamed(AppRoute.home.name)
-            : context.goNamed(
-                AppRoute.login.name,
-              );
+        if (session.isSignedIn) {
+          context.goNamed(AppRoute.home.name);
+        } else {
+          context.goNamed(AppRoute.login.name);
+        }
       },
     );
   }
