@@ -1,124 +1,82 @@
-import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:plantairium/common/utils/env_vars.dart';
 
-import 'package:amplify_api/amplify_api.dart';
-import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:plantairium/models/ModelProvider.dart';
+class PlantsService {
+  final String apiUrl = EnvVars.sensorsApi; 
 
-final plantsAPIServiceProvider = Provider<PlantsAPIService>((ref) {
-  final service = PlantsAPIService();
-  return service;
-});
+  Future<List<dynamic>> fetchPlants(int idSensore) async {
+  // final url = 'https://29iwzg968f.execute-api.eu-north-1.amazonaws.com/dev/pianta?IdSensore=$idSensore'; // Usa la query string
+  // print('Chiamata API: $url');
+  final response = await http.get(Uri.parse('$apiUrl/pianta?IdSensore=$idSensore'));
 
-class PlantsAPIService {
-  PlantsAPIService();
+  // final response = await http.get(Uri.parse(url));
 
-  Future<List<Plant>> getPlants() async {
-    try {
-      final request = ModelQueries.list(Plant.classType);
-      final response = await Amplify.API.query(request: request).response;
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body)['piante'];
+    print('Dati ricevuti dal server: $data');
+    return data;
+  } else {
+    print('Errore API: ${response.statusCode} - ${response.body}');
+    throw Exception('Errore durante il fetch delle piante');
+  }
+}
 
-      final plants = response.data?.items;
-      if (plants == null) {
-        safePrint('getPlants errors: ${response.errors}');
-        return const [];
-      }
-      // trips.sort(
-      //   (a, b) =>
-      //       a!.startDate.getDateTime().compareTo(b!.startDate.getDateTime()),
-      // );
-      return plants
-          .map((e) => e as Plant)
-          // .where(
-          //   (element) => element.endDate.getDateTime().isAfter(DateTime.now()),
-          // )
-          .toList();
-    } on Exception catch (error) {
-      safePrint('getPlants failed: $error');
 
-      return const [];
+  Future<void> addPlant({
+    required int idSensore,
+    required String nome,
+    required String specie,
+    String? descrizione,
+    required String dataPiantumazione,
+  }) async {
+    final body = {
+      "IdSensore": idSensore,
+      "Nome": nome,
+      "Specie": specie,
+      "Descrizione": descrizione,
+      "DataPiantumazione": dataPiantumazione,
+    };
+    final response = await http.post(
+      Uri.parse(apiUrl),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Errore durante l\'aggiunta della pianta');
     }
   }
 
-  // Future<List<Plant>> getPastTrips() async {
-  //   try {
-  //     final request = ModelQueries.list(Plant.classType);
-  //     final response = await Amplify.API.query(request: request).response;
-
-  //     final plants = response.data?.items;
-  //     if (plants == null) {
-  //       safePrint('getPastPlants errors: ${response.errors}');
-  //       return const [];
-  //     }
-  //     // plants.sort(
-  //     //   (a, b) =>
-  //     //       a!.startDate.getDateTime().compareTo(b!.startDate.getDateTime()),
-  //     // );
-  //     return plants
-  //         .map((e) => e as Plant)
-  //         // .where(
-  //         //   (element) => element.endDate.getDateTime().isBefore(DateTime.now()),
-  //         // )
-  //         .toList();
-  //   } on Exception catch (error) {
-  //     safePrint('getPastPlants failed: $error');
-
-  //     return const [];
-  //   }
-  // }
-
-  Future<void> addPlant(Plant plant) async {
-    try {
-      final request = ModelMutations.create(plant);
-      final response = await Amplify.API.mutate(request: request).response;
-
-      final createdPlant = response.data;
-      if (createdPlant == null) {
-        safePrint('addPlant errors: ${response.errors}');
-        return;
-      }
-    } on Exception catch (error) {
-      safePrint('addPlant failed: $error');
+  Future<void> updatePlant({
+    required int id,
+    required String nome,
+    required String specie,
+    String? descrizione,
+    required String dataPiantumazione,
+  }) async {
+    final body = {
+      "Id": id,
+      "Nome": nome,
+      "Specie": specie,
+      "Descrizione": descrizione,
+      "DataPiantumazione": dataPiantumazione,
+    };
+    final response = await http.put(
+      Uri.parse(apiUrl),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Errore durante la modifica della pianta');
     }
   }
 
-  Future<void> deletePlant(Plant plant) async {
-    try {
-      await Amplify.API
-          .mutate(
-            request: ModelMutations.delete(plant),
-          )
-          .response;
-    } on Exception catch (error) {
-      safePrint('deletePlant failed: $error');
-    }
-  }
-
-  Future<void> updatePlant(Plant updatedPlant) async {
-    try {
-      await Amplify.API
-          .mutate(
-            request: ModelMutations.update(updatedPlant),
-          )
-          .response;
-    } on Exception catch (error) {
-      safePrint('updatePlant failed: $error');
-    }
-  }
-
-  Future<Plant> getPlant(String plantId) async {
-    try {
-      final request = ModelQueries.get(
-        Plant.classType,
-        PlantModelIdentifier(id: plantId),
-      );
-      final response = await Amplify.API.query(request: request).response;
-
-      final plant = response.data!;
-      return plant;
-    } on Exception catch (error) {
-      safePrint('getPlant failed: $error');
-      rethrow;
+  Future<void> deletePlant(int id) async {
+    final response = await http.delete(
+      Uri.parse('$apiUrl?Id=$id'),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Errore durante l\'eliminazione della pianta');
     }
   }
 }

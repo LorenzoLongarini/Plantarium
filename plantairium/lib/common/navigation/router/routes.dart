@@ -5,6 +5,7 @@ enum AppRoute {
   favorites,
   login,
   myaccount,
+  plants,
   sensors,
   sensor,
 }

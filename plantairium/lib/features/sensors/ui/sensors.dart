@@ -60,8 +60,16 @@ class SensorsView extends ConsumerWidget {
                     },
                   ),
                   onTap: () {
-                    context.goNamed(AppRoute.sensor.name);
+                    final int sensorId = sensor['Id'];
+                    context.goNamed(
+                      'plants',
+                      pathParameters: {'id': sensorId.toString()},
+                    );
+                    // context.go('/plants/$sensorId');
                   },
+                  // onTap: () {
+                  //   context.goNamed(AppRoute.sensor.name);
+                  // },
                   onLongPress: () {
                     ref
                         .read(sensorsControllerProvider.notifier)

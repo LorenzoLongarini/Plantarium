@@ -7,6 +7,7 @@ import 'package:plantairium/common/ui/base.dart';
 import 'package:plantairium/features/account/ui/account_options/my_account.dart';
 import 'package:plantairium/features/chatbot/ui/chatbot.dart';
 import 'package:plantairium/features/login/ui/login.dart';
+import 'package:plantairium/features/plants/ui/plant.dart';
 import 'package:plantairium/features/sensors/ui/sensor_view.dart';
 import 'package:plantairium/features/sensors/ui/sensors.dart';
 
@@ -72,6 +73,14 @@ final GoRouter router = GoRouter(
       name: AppRoute.sensor.name,
       builder: (BuildContext context, GoRouterState state) {
         return const SensorPage();
+      },
+    ),
+    GoRoute(
+      path: '/plants/:id',
+      name: AppRoute.plants.name,
+      builder: (BuildContext context, GoRouterState state) {
+        final int sensorId = int.parse(state.pathParameters['id']!);
+        return PlantsView(idSensore: sensorId);
       },
     ),
     
