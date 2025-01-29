@@ -3,24 +3,33 @@ import 'package:http/http.dart' as http;
 import 'package:plantairium/common/utils/env_vars.dart';
 
 class PlantsService {
-  final String apiUrl = EnvVars.sensorsApi; 
+  final String apiUrl = EnvVars.lambdaApi; 
 
-  Future<List<dynamic>> fetchPlants(int idSensore) async {
-  // final url = 'https://29iwzg968f.execute-api.eu-north-1.amazonaws.com/dev/pianta?IdSensore=$idSensore'; // Usa la query string
-  // print('Chiamata API: $url');
-  final response = await http.get(Uri.parse('$apiUrl/pianta?IdSensore=$idSensore'));
+Future<List<dynamic>> fetchPlants({int? idSensore}) async {
+    var url = '';
+  if (idSensore == null) {
+     url = '$apiUrl/pianta';
+  } else {
+   url = '$apiUrl/pianta?IdSensore=$idSensore';
+  }
+  print('📤 [DEBUG] Chiamata API: $url');
 
-  // final response = await http.get(Uri.parse(url));
+  final response = await http.get(Uri.parse(url));
+
+  print('📥 [DEBUG] Risposta API: ${response.statusCode}');
+  print('📥 [DEBUG] Corpo della risposta: ${response.body}');
 
   if (response.statusCode == 200) {
-    final data = jsonDecode(response.body)['piante'];
-    print('Dati ricevuti dal server: $data');
+    final decoded = jsonDecode(response.body);
+    final data = decoded['piante'];
+    print('✅ [DEBUG] Dati ricevuti dal server: $data');
     return data;
   } else {
-    print('Errore API: ${response.statusCode} - ${response.body}');
+    print('❌ [DEBUG] Errore API: ${response.statusCode} - ${response.body}');
     throw Exception('Errore durante il fetch delle piante');
   }
 }
+
 
 
   Future<void> addPlant({

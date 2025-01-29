@@ -6,7 +6,9 @@ import 'package:plantairium/common/utils/env_vars.dart';
 final sensorServiceProvider = Provider((ref) => SensorService());
 
 class SensorService {
-  final String baseUrl = EnvVars.sensorsApi; 
+  final String baseUrl = EnvVars.lambdaApi; 
+
+
 
   Future<List<dynamic>> getSensors() async {
     final response = await http.get(Uri.parse('$baseUrl/sensore'));
@@ -49,11 +51,17 @@ class SensorService {
   }
 
   Future<void> deleteSensor(int id) async {
-    final response = await http.delete(
-      Uri.parse('$baseUrl/sensore/$id'),
-    );
-    if (response.statusCode != 200) {
-      throw Exception('Errore durante l\'eliminazione del sensore');
-    }
+  final response = await http.delete(
+    Uri.parse('$baseUrl/sensore'), // Rimuovi l'ID dall'URL
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({"id": id}), // Passa l'ID nel body
+  );
+
+  print('DELETE status code: ${response.statusCode}');
+  print('DELETE response body: ${response.body}');
+
+  if (response.statusCode != 200 && response.statusCode != 204) {
+    throw Exception('Errore durante l\'eliminazione del sensore');
   }
+}
 }

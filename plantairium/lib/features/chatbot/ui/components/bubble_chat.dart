@@ -1,31 +1,30 @@
-import 'package:chat_bubbles/bubbles/bubble_special_three.dart';
+// lib/features/chatbot/ui/components/bubble_chat.dart
+
 import 'package:flutter/material.dart';
-import 'package:plantairium/common/utils/colors.dart';
-import 'package:plantairium/features/chatbot/utils/constants/user_type.dart';
+import 'package:chat_bubbles/chat_bubbles.dart';
 
 class BubbleMessage extends StatelessWidget {
+  final String message;
+  final String userType;
+  final String? timestamp;
+  final bool isLoading;
+
   const BubbleMessage({
-    super.key,
+    Key? key,
     required this.message,
     required this.userType,
-    this.isTail = false,
-    this.textStyle = const TextStyle(fontSize: 15, color: Colors.white),
-  });
-  final String message;
-  final bool? isTail;
-  final TextStyle? textStyle;
-  final String userType;
+    this.timestamp,
+    this.isLoading = false,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BubbleSpecialThree(
-      isSender: userType == UserType.sender.name,
-      text: message,
-      tail: isTail!,
-      textStyle: textStyle!,
-      color: userType == UserType.sender.name
-          ? Palette.primary
-          : Palette.secundary,
+      text: isLoading ? "..." : message,
+      isSender: userType == "user",
+      color: userType == "user" ? Colors.green[600]! : Colors.brown[400]!,
+      tail: true,
+      textStyle: const TextStyle(color: Colors.white, fontSize: 16),
     );
   }
 }

@@ -1,84 +1,293 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:plantairium/common/navigation/router/routes.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:plantairium/features/report/controller/report_controller.dart';
 import '../controller/plants_controller.dart';
+import 'dart:math';
 
-class PlantsView extends ConsumerWidget {
+class PlantsView extends ConsumerStatefulWidget {
   final int idSensore;
+  final Map<String, dynamic> sensorFeatures;
 
-  const PlantsView({Key? key, required this.idSensore}) : super(key: key);
+  const PlantsView({Key? key, required this.idSensore, required this.sensorFeatures})
+      : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Chiamare il metodo fetchPlants quando il widget viene costruito
-    ref.read(plantsControllerProvider.notifier).fetchPlants(idSensore);
+  _PlantsViewState createState() => _PlantsViewState();
+}
 
-    // Osserva lo stato del provider
-    final plantsAsyncValue = ref.watch(plantsControllerProvider);
+class _PlantsViewState extends ConsumerState<PlantsView> {
+  bool showFeatures = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(plantsControllerProvider(widget.idSensore).notifier).fetchPlants();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    print("📢 [DEBUG] PlantsView aperta con IdSensore: ${widget.idSensore}");
+    final plantsAsyncValue = ref.watch(plantsControllerProvider(widget.idSensore));
 
     return Scaffold(
-        appBar: AppBar(
+      appBar: AppBar(
         title: const Text('Gestione Piante'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            context.goNamed(AppRoute.sensors.name);
+            context.goNamed('home');
           },
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Aggiungi Pianta',
-            
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return  AddPlantDialog(idSensore: idSensore);
-                },
-              );
-            },
+      ),
+      body: Column(
+        children: [
+          _buildSensorCard(),
+          Expanded(
+            child: plantsAsyncValue.when(
+              data: (plants) {
+                if (plants.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'Aggiungi una pianta!',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  itemCount: plants.length,
+                  itemBuilder: (context, index) {
+                    final plant = plants[index];
+                    return _buildPlantCard(plant);
+                  },
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) => Center(child: Text('Errore: ${error.toString()}')),
+            ),
           ),
         ],
       ),
-      body: plantsAsyncValue.when(
-        data: (plants) {
-          if (plants.isEmpty) {
-            return const Center(
-              child: Text('Nessuna pianta trovata'),
+    );
+  }
+  /// **🔹 Card della Pianta**
+  Widget _buildPlantCard(Map<String, dynamic> plant) {
+    return Card(
+      margin: const EdgeInsets.all(8),
+      child: ListTile(
+        title: Text(plant['Nome']),
+        subtitle: Text(plant['Specie'] ?? ''),
+        trailing: _buildReportButtons(plant),
+      ),
+    );
+  }
+
+Widget _buildReportButtons(Map<String, dynamic> plant) {
+  final reportController = ref.read(reportControllerProvider.notifier);
+  final pdfPath = ref.watch(reportControllerProvider);
+
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      IconButton(
+        icon: const Icon(Icons.picture_as_pdf, color: Colors.red),
+        tooltip: 'Genera Report',
+        onPressed: () async {
+          print("📢 [DEBUG] Generazione report per pianta: ${plant['Nome']}");
+
+          // ✅ Verifica che le feature non siano null
+          if (widget.sensorFeatures["features"] == null ||
+              widget.sensorFeatures["features"].isEmpty) {
+            print("❌ [DEBUG] Errore: le features del sensore sono null o vuote");
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('❌ Errore: Nessuna feature disponibile per il report!')),
+            );
+            return;
+          }
+
+          // 1️⃣ Processiamo i dati per calcolare media, max, min, stdDev
+          Map<String, dynamic> processedData = processSensorData(widget.sensorFeatures["features"]);
+
+          // 2️⃣ Generiamo il prompt ottimizzato
+          String prompt = generatePrompt(plant['Nome'], plant['Specie'] ?? 'Specie sconosciuta', processedData);
+
+          try {
+            // 3️⃣ Inviamo la richiesta con i dati ottimizzati
+            await reportController.generateAndSaveReport(
+              plant['Nome'],
+              plant['Specie'] ?? 'Specie sconosciuta',
+              processedData,
+              prompt,
+            );
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('✅ Report generato con successo!')),
+            );
+          } catch (e) {
+            print("❌ [DEBUG] Errore durante la generazione del PDF: $e");
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('❌ Errore durante la generazione del report!')),
             );
           }
-          return ListView.builder(
-            itemCount: plants.length,
-            itemBuilder: (context, index) {
-              final plant = plants[index];
-              return Card(
-                child: ListTile(
-                  title: Text(plant['Nome']),
-                  subtitle: Text(plant['Specie'] ?? ''),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      // Modifica pianta
-                    },
-                  ),
-                  onTap: () {
-                    // Dettagli o altre azioni
-                  },
-                ),
-              );
-            },
-          );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Text('Errore: ${error.toString()}'),
+      ),
+      if (pdfPath != null)
+        IconButton(
+          icon: const Icon(Icons.open_in_new, color: Colors.green),
+          tooltip: 'Apri Report',
+          onPressed: () {
+            OpenFilex.open(pdfPath);
+          },
+        ),
+    ],
+  );
+}
+
+
+  /// **🔹 Card delle Feature del Sensore**
+  Widget _buildSensorCard() {
+    return Card(
+      margin: const EdgeInsets.all(8),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("ID Sensore: ${widget.idSensore}",
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text("Nome Sensore: Sensore Test"),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  showFeatures = !showFeatures;
+                });
+              },
+              child: Text(showFeatures ? "Nascondi Features" : "Mostra Features"),
+            ),
+            if (showFeatures) _buildFeatureCharts(), // ✅ Mostriamo i grafici solo se necessario
+          ],
         ),
       ),
     );
   }
+
+  /// **🔹 Grafici delle Feature del Sensore**
+  Widget _buildFeatureCharts() {
+    final Map<String, List<dynamic>> allFeatures = {};
+
+    if (widget.sensorFeatures.containsKey("features") &&
+        widget.sensorFeatures["features"] is Map<String, dynamic>) {
+      final Map<String, dynamic> features = widget.sensorFeatures["features"];
+
+      features.forEach((key, value) {
+        if (key.toLowerCase() != "id" && key.toLowerCase() != "dateandtime") {
+          if (value is List) {
+            allFeatures[key] = value;
+          }
+        }
+      });
+    }
+
+    if (allFeatures.isEmpty) {
+      return const Center(
+        child: Text("Nessuna feature disponibile."),
+      );
+    }
+
+    return SizedBox(
+      height: 400,
+      child: ListView(
+        children: allFeatures.entries.map((entry) {
+          // Trova il valore minimo della serie
+          double minValue = double.infinity;
+          for (var val in entry.value) {
+            if (val is num && val.toDouble() < minValue) {
+              minValue = val.toDouble();
+            }
+          }
+
+          return SizedBox(
+            height: 250,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    entry.key,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: LineChart(
+                      LineChartData(
+                        minX: 0,
+                        maxX: 23,
+                        titlesData: FlTitlesData(
+                          topTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 40,
+                              getTitlesWidget: (value, meta) {
+                                if (value == 0) return const Text("0:00", style: TextStyle(fontSize: 14));
+                                if (value == 12) return const Text("12:00", style: TextStyle(fontSize: 14));
+                                if (value == 23) return const Text("23:00", style: TextStyle(fontSize: 14));
+                                return const Text("");
+                              },
+                            ),
+                          ),
+                          leftTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 40,
+                              getTitlesWidget: (value, meta) {
+                                // Nasconde il valore minimo
+                                if (value == minValue) return const Text("");
+                                return Text(value.toStringAsFixed(1), style: const TextStyle(fontSize: 12));
+                              },
+                            ),
+                          ),
+                          rightTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                        ),
+                        borderData: FlBorderData(show: false),
+                        lineBarsData: [
+                          LineChartBarData(
+                            spots: List.generate(
+                              entry.value.length,
+                              (i) {
+                                dynamic val = entry.value[i];
+                                return FlSpot(i.toDouble(), val is num ? val.toDouble() : 0.0);
+                              },
+                            ),
+                            isCurved: true,
+                            preventCurveOverShooting: true,
+                            dotData: FlDotData(show: false),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
 }
+
 
 class AddPlantDialog extends StatefulWidget {
   final int idSensore;
@@ -147,7 +356,7 @@ class _AddPlantDialogState extends State<AddPlantDialog> {
             ),
             TextButton(
               onPressed: () {
-                ref.read(plantsControllerProvider.notifier).addPlant(
+                ref.read(plantsControllerProvider(widget.idSensore).notifier).addPlant(
                       idSensore: widget.idSensore,
                       nome: nameController.text,
                       specie: specieController.text,
@@ -170,8 +379,9 @@ class _AddPlantDialogState extends State<AddPlantDialog> {
 
 class EditPlantDialog extends StatefulWidget {
   final Map<String, dynamic> plant;
+   final int idSensore; 
 
-  const EditPlantDialog({Key? key, required this.plant}) : super(key: key);
+  const EditPlantDialog({Key? key, required this.plant, required this.idSensore}) : super(key: key);
 
   @override
   State<EditPlantDialog> createState() => _EditPlantDialogState();
@@ -182,6 +392,7 @@ class _EditPlantDialogState extends State<EditPlantDialog> {
   late TextEditingController specieController;
   late TextEditingController descriptionController;
   late TextEditingController dateController;
+  
 
   @override
   void initState() {
@@ -237,7 +448,7 @@ class _EditPlantDialogState extends State<EditPlantDialog> {
             ),
             TextButton(
               onPressed: () {
-                ref.read(plantsControllerProvider.notifier).updatePlant(
+                ref.read(plantsControllerProvider(widget.idSensore).notifier).updatePlant(
                       id: widget.plant['Id'],
                       idSensore: widget.plant['IdSensore'],
                       nome: nameController.text,
@@ -254,4 +465,53 @@ class _EditPlantDialogState extends State<EditPlantDialog> {
       },
     );
   }
+}
+
+
+String generatePrompt(String plantName, String species, Map<String, dynamic> processedFeatures) {
+  return """
+  Analizza le condizioni della pianta **$plantName** di specie **$species** e suggerisci miglioramenti.
+
+  **Dati raccolti nelle ultime 24 ore:**
+  ${processedFeatures.entries.map((entry) => "**${entry.key}** -> Media: ${entry.value['media']}, Max: ${entry.value['max']}, Min: ${entry.value['min']}, StdDev: ${entry.value['stdDev']}").join("\n")}
+
+  Basandoti su questi dati, fornisci un'analisi e suggerisci azioni per migliorare la salute della pianta.
+  """;
+}
+
+Map<String, dynamic> processSensorData(Map<String, dynamic> rawFeatures) {
+  Map<String, dynamic> processedData = {};
+
+  rawFeatures.forEach((key, value) {
+    if (value is List && value.isNotEmpty) {
+      try {
+        // Convertiamo tutti i valori a double, ignorando quelli non numerici
+        List<double> numericValues = value
+            .map((v) => double.tryParse(v.toString())) // Converti a double in modo sicuro
+            .where((v) => v != null) // Rimuovi eventuali null
+            .map((v) => v!) // Cast sicuro
+            .toList();
+
+        if (numericValues.isNotEmpty) {
+          double sum = numericValues.reduce((a, b) => a + b);
+          double mean = sum / numericValues.length;
+          double maxVal = numericValues.reduce(max);
+          double minVal = numericValues.reduce(min);
+          double variance = numericValues.map((val) => pow(val - mean, 2)).reduce((a, b) => a + b) / numericValues.length;
+          double stdDev = sqrt(variance);
+
+          processedData[key] = {
+            "media": mean.toStringAsFixed(2),
+            "max": maxVal.toStringAsFixed(2),
+            "min": minVal.toStringAsFixed(2),
+            "stdDev": stdDev.toStringAsFixed(2),
+          };
+        }
+      } catch (e) {
+        print("⚠ Errore nel parsing dei dati per la feature '$key': $e");
+      }
+    }
+  });
+
+  return processedData;
 }

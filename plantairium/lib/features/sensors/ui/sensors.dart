@@ -41,36 +41,17 @@ class SensorsView extends ConsumerWidget {
           return ListView.builder(
             itemCount: sensors.length,
             itemBuilder: (context, index) {
-              final sensor = sensors[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: ListTile(
-                  title: Text(sensor['Nome']),
-                  subtitle: Text('ID Utente: ${sensor['IdUtente']}'),
-                  trailing: IconButton(
-                    icon:  Icon(Icons.edit, color: Palette.primary),
-                    tooltip: 'Modifica Sensore',
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return EditSensorDialog(sensor: sensor);
-                        },
-                      );
-                    },
+                final sensor = sensors[index];
+                return Dismissible(
+                  key: Key(sensor['Id'].toString()),
+                  background: Container(
+                    color: Colors.red,
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: const Icon(Icons.delete, color: Colors.white),
                   ),
-                  onTap: () {
-                    final int sensorId = sensor['Id'];
-                    context.goNamed(
-                      'plants',
-                      pathParameters: {'id': sensorId.toString()},
-                    );
-                    // context.go('/plants/$sensorId');
-                  },
-                  // onTap: () {
-                  //   context.goNamed(AppRoute.sensor.name);
-                  // },
-                  onLongPress: () {
+                  direction: DismissDirection.endToStart,
+                  onDismissed: (direction) {
                     ref
                         .read(sensorsControllerProvider.notifier)
                         .deleteSensor(sensor['Id'])
@@ -80,9 +61,33 @@ class SensorsView extends ConsumerWidget {
                       );
                     });
                   },
-                ),
-              );
-            },
+                  child: Card(
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: ListTile(
+                      leading: Image.asset('assets/img/sensor.png',
+                          fit: BoxFit.cover),
+                      title: Text(sensor['Nome'] as String? ?? ''),
+                      subtitle: Text('ID Utente: ${sensor['IdUtente']}'),
+                      trailing: IconButton(
+                        icon: Icon(Icons.edit, color: Palette.primary),
+                        tooltip: 'Modifica Sensore',
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return EditSensorDialog(sensor: sensor);
+                            },
+                          );
+                        },
+                      ),
+                      onTap: () {
+                        context.goNamed(AppRoute.sensor.name);
+                      },
+                    ),
+                  ),
+                );
+              },
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -93,6 +98,8 @@ class SensorsView extends ConsumerWidget {
     );
   }
 }
+
+
 
 
 class AddSensorDialog extends ConsumerWidget {

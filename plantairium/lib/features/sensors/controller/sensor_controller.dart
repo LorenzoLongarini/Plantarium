@@ -12,6 +12,19 @@ class SensorsController extends StateNotifier<AsyncValue<List<dynamic>>> {
     _loadSensors();
   }
 
+    Future<Map<String, dynamic>> fetchSensorData(int sensorId) async {
+    try {
+      final sensors = await ref.read(sensorServiceProvider).getSensors();
+      final sensorData = sensors.firstWhere((sensor) => sensor['Id'] == sensorId, orElse: () => {});
+      state = AsyncData(sensorData);
+      return sensorData;
+    } catch (e) {
+      state = AsyncError(e, StackTrace.current);
+      return {};
+    }
+  }
+
+
   Future<void> _loadSensors() async {
     try {
       final sensors = await ref.read(sensorServiceProvider).getSensors();
@@ -43,7 +56,7 @@ class SensorsController extends StateNotifier<AsyncValue<List<dynamic>>> {
   Future<void> deleteSensor(int id) async {
     try {
       await ref.read(sensorServiceProvider).deleteSensor(id);
-      _loadSensors(); // Ricarica i sensori
+      // _loadSensors(); 
     } catch (e) {
       state = AsyncError(e, StackTrace.current);
     }

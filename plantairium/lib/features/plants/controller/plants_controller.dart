@@ -2,21 +2,32 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:plantairium/features/plants/services/plants_api_service.dart';
 
 final plantsControllerProvider =
-    StateNotifierProvider<PlantsController, AsyncValue<List<dynamic>>>((ref) {
-  return PlantsController();
-});
+    StateNotifierProvider.family<PlantsController, AsyncValue<List<dynamic>>, int>(
+  (ref, idSensore) {
+    print("📢 [DEBUG] Creazione del PlantsController per IdSensore: $idSensore");
+    return PlantsController(ref, idSensore);
+  },
+);
 
 class PlantsController extends StateNotifier<AsyncValue<List<dynamic>>> {
+  final Ref ref;
   final PlantsService _plantsService = PlantsService();
+  final int idSensore;
 
-  PlantsController() : super(const AsyncValue.loading());
+  // ✅ Modifica il costruttore per ricevere l'ID del sensore
+  PlantsController(this.ref, this.idSensore) : super(const AsyncValue.loading()) {
+    fetchPlants(); // ⚡ Carica le piante automaticamente
+  }
 
-  Future<void> fetchPlants(int idSensore) async {
+  Future<void> fetchPlants() async {
     try {
-      final plants = await _plantsService.fetchPlants(idSensore);
+      print("📤 [DEBUG] Chiamata fetchPlants() per IdSensore: $idSensore...");
+      final plants = await _plantsService.fetchPlants(idSensore: idSensore);
+      print("✅ [DEBUG] Piante ricevute: $plants");
       state = AsyncValue.data(plants);
-    } catch (e) {
-      state = AsyncValue.error(e, StackTrace.current);
+    } catch (e, stacktrace) {
+      print("❌ [DEBUG] Errore fetchPlants(): $e");
+      state = AsyncValue.error(e, stacktrace);
     }
   }
 
@@ -35,7 +46,7 @@ class PlantsController extends StateNotifier<AsyncValue<List<dynamic>>> {
         descrizione: descrizione,
         dataPiantumazione: dataPiantumazione,
       );
-      await fetchPlants(idSensore); // Ricarica le piante
+      await fetchPlants(); // Ricarica le piante
     } catch (e) {
       state = AsyncValue.error(e, StackTrace.current);
     }
@@ -57,7 +68,7 @@ class PlantsController extends StateNotifier<AsyncValue<List<dynamic>>> {
         descrizione: descrizione,
         dataPiantumazione: dataPiantumazione,
       );
-      await fetchPlants(idSensore); // Ricarica le piante
+      await fetchPlants(); // Ricarica le piante
     } catch (e) {
       state = AsyncValue.error(e, StackTrace.current);
     }
@@ -66,7 +77,7 @@ class PlantsController extends StateNotifier<AsyncValue<List<dynamic>>> {
   Future<void> deletePlant(int id, int idSensore) async {
     try {
       await _plantsService.deletePlant(id);
-      await fetchPlants(idSensore); // Ricarica le piante
+      await fetchPlants(); // Ricarica le piante
     } catch (e) {
       state = AsyncValue.error(e, StackTrace.current);
     }

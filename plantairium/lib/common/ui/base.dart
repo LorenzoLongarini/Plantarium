@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
+import 'package:go_router/go_router.dart';
+import 'package:plantairium/common/navigation/router/routes.dart';
 import 'package:plantairium/common/utils/colors.dart';
 import 'package:plantairium/features/account/ui/account.dart';
 import 'package:plantairium/features/plants/ui/plant.dart';
@@ -38,11 +40,14 @@ class _BaseState extends State<Base> {
         extendBody: false,
         floatingActionButton: FloatingActionButton(
           backgroundColor: Palette.primary,
-          onPressed: () {},
+          onPressed: () {
+            context.goNamed(AppRoute.chatbot.name);
+
+          },
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
           child: Icon(
-            Icons.document_scanner_outlined,
+            Icons.chat,
             color: Palette.white,
           ),
         ),

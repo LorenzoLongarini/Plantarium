@@ -57,7 +57,8 @@ final GoRouter router = GoRouter(
       path: '/chatbot',
       name: AppRoute.chatbot.name,
       builder: (BuildContext context, GoRouterState state) {
-        return const Chatbot();
+        // final int userId = int.parse(state.pathParameters['id']|);
+        return  Chatbot(userId: 1,);
       },
     ),
      GoRoute(
@@ -80,7 +81,9 @@ final GoRouter router = GoRouter(
       name: AppRoute.plants.name,
       builder: (BuildContext context, GoRouterState state) {
         final int sensorId = int.parse(state.pathParameters['id']!);
-        return PlantsView(idSensore: sensorId);
+        final Map<String, dynamic> sensorFeatures = state.extra as Map<String, dynamic>? ?? {};
+        
+        return PlantsView(idSensore: sensorId, sensorFeatures:sensorFeatures);
       },
     ),
     
