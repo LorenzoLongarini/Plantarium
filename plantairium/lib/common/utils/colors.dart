@@ -20,6 +20,17 @@ class Palette {
               Brightness.dark
           ? const Color.fromARGB(255, 46, 100, 66)
           : const Color.fromARGB(255, 46, 100, 66);
+  static Color get primaryOp =>
+      SchedulerBinding.instance.platformDispatcher.platformBrightness ==
+              Brightness.dark
+          ? const Color.fromARGB(155, 46, 100, 66)
+          : const Color.fromARGB(155, 46, 100, 66);
+  static Color get cardFaq =>
+      SchedulerBinding.instance.platformDispatcher.platformBrightness ==
+              Brightness.dark
+          ? const Color.fromARGB(100, 25, 203, 23)
+          : const Color.fromARGB(100, 25, 203, 23);
+          
   static Color get lightGrey =>
       SchedulerBinding.instance.platformDispatcher.platformBrightness ==
               Brightness.dark

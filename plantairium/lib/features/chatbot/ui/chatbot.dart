@@ -7,7 +7,6 @@ import 'package:plantairium/features/chatbot/controller/message_controller.dart'
 import 'package:plantairium/features/chatbot/ui/components/bubble_chat.dart';
 import 'package:plantairium/features/chatbot/ui/components/bottom_input_field.dart';
 
-
 class Chatbot extends ConsumerStatefulWidget {
   final int userId;
 
@@ -22,14 +21,14 @@ class _ChatbotState extends ConsumerState<Chatbot> {
   final ScrollController _scrollController = ScrollController();
 
   bool isWaitingForResponse = false;
-  bool _showSlashSuggestions = false; // per mostrare suggerimenti quando si digita "/"
+  bool _showSlashSuggestions =
+      false; // per mostrare suggerimenti quando si digita "/"
 
   // Quick Questions fisse (le FAQ e altre domande)
   final List<String> quickQuestions = [
     "Come innaffiare al meglio il basilico?",
     "Che tipo di sensori servono per misurare l'umidità del terreno?",
     "Come gestire la temperatura per piante da interno?",
-    "/faq",
   ];
 
   @override
@@ -84,7 +83,9 @@ class _ChatbotState extends ConsumerState<Chatbot> {
       isWaitingForResponse = true;
     });
 
-    await ref.read(messagesControllerProvider.notifier).sendMessage(widget.userId, text);
+    await ref
+        .read(messagesControllerProvider.notifier)
+        .sendMessage(widget.userId, text);
 
     setState(() {
       isWaitingForResponse = false;
@@ -121,6 +122,13 @@ class _ChatbotState extends ConsumerState<Chatbot> {
               runSpacing: 4.0,
               children: quickQuestions.map((question) {
                 return ActionChip(
+                  backgroundColor: Colors.grey.shade200,
+                  shape: StadiumBorder(
+                    side: BorderSide(
+                      color: Colors.grey.shade400, // Colore del bordo grigio
+                      width: 1.0,
+                    ),
+                  ),
                   label: Text(question),
                   onPressed: () {
                     // Inseriamo la domanda nel campo di input (non inviamo subito)
@@ -139,9 +147,11 @@ class _ChatbotState extends ConsumerState<Chatbot> {
             child: messagesState.when(
               data: (messages) {
                 if (messages.isEmpty) {
-                  return const Center(child: Text('Nessun messaggio ancora inviato.'));
+                  return const Center(
+                      child: Text('Nessun messaggio ancora inviato.'));
                 }
-                WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+                WidgetsBinding.instance
+                    .addPostFrameCallback((_) => _scrollToBottom());
 
                 return ListView.builder(
                   controller: _scrollController,
@@ -169,8 +179,7 @@ class _ChatbotState extends ConsumerState<Chatbot> {
           ),
 
           // Se l'utente ha digitato "/", mostriamo i suggerimenti (FAQ + piante)
-          if (_showSlashSuggestions)
-            _buildSlashSuggestions(allPlantsState),
+          if (_showSlashSuggestions) _buildSlashSuggestions(allPlantsState),
 
           // Barra di input
           Padding(
@@ -191,7 +200,6 @@ class _ChatbotState extends ConsumerState<Chatbot> {
   /// Costruisce la sezione dei suggerimenti dopo aver digitato "/"
   Widget _buildSlashSuggestions(AsyncValue<List<dynamic>> allPlantsState) {
     if (allPlantsState is AsyncLoading) {
-      // Se preferisci puoi mostrare un piccolo loader
       return Container(
         color: Colors.grey[200],
         width: double.infinity,
@@ -210,42 +218,52 @@ class _ChatbotState extends ConsumerState<Chatbot> {
 
     final plants = allPlantsState.value ?? [];
 
-    return Container(
-      color: Colors.grey[200],
-      width: double.infinity,
-      padding: const EdgeInsets.all(8.0),
-      child: Wrap(
-        spacing: 8.0,
-        runSpacing: 4.0,
-        children: [
-          // Suggerimento /faq
-          ActionChip(
-            label: const Text("/faq"),
-            onPressed: () {
-              _replaceLastSlashWith("/faq ");
-            },
-          ),
-          // Suggerimenti per le piante
-          ...plants.map((plant) {
-            final nome = plant['Nome'] ?? 'Sconosciuto';
-            final id = plant['Id'] ?? '-';
-            // Esempio di label -> "/plant <ID> Nome"
-            final label = "/plant $id $nome";
+    return SizedBox(
+      height: 50, // 🔹 Altezza fissa per evitare overflow
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal, // ✅ Scroll orizzontale
+        itemCount: plants.length + 1, // +1 per il suggerimento "/faq"
+        itemBuilder: (context, index) {
+          if (index == 0) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: ActionChip(
+                backgroundColor: Colors.grey.shade200,
+                shape: StadiumBorder(
+                  side: BorderSide(
+                    color: Colors.grey.shade400, // Colore del bordo grigio
+                    width: 1.0,
+                  ),
+                ),
+                label: const Text("/faq"),
+                onPressed: () {
+                  _replaceLastSlashWith("/faq ");
+                },
+              ),
+            );
+          }
 
-            return ActionChip(
-              label: Text(label),
+          final plant = plants[index - 1]; // 🔹 Perché il primo è "/faq"
+          final nome = plant['Nome'] ?? 'Sconosciuto';
+          final id = plant['Id'] ?? '-';
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: ActionChip(
+              backgroundColor: Colors.grey.shade200,
+              shape: StadiumBorder(
+                side: BorderSide(
+                  color: Colors.grey.shade400, // Colore del bordo grigio
+                  width: 1.0,
+                ),
+              ),
+              label: Text("/plant $id $nome"),
               onPressed: () {
-                // Inseriamo "/plant <ID> " (o "/plant <ID> <Nome>" se preferisci)
-                // Esempio: "/plant 5 Basilico"
-                // Se vuoi passare SOLO l'ID:
-                //   _replaceLastSlashWith("/plant $id ");
-                // Se vuoi anche il nome:
-                //   _replaceLastSlashWith("/plant $id $nome ");
                 _replaceLastSlashWith("/plant $id ");
               },
-            );
-          }).toList(),
-        ],
+            ),
+          );
+        },
       ),
     );
   }

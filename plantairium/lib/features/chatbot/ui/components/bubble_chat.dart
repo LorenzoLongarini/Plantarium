@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:chat_bubbles/chat_bubbles.dart';
+import 'package:plantairium/common/utils/colors.dart';
 
 class BubbleMessage extends StatelessWidget {
   final String message;
@@ -22,7 +23,7 @@ class BubbleMessage extends StatelessWidget {
     return BubbleSpecialThree(
       text: isLoading ? "..." : message,
       isSender: userType == "user",
-      color: userType == "user" ? Colors.green[600]! : Colors.brown[400]!,
+      color: userType == "user" ? Color.fromARGB(255, 112, 213, 62) : Palette.primary,
       tail: true,
       textStyle: const TextStyle(color: Colors.white, fontSize: 16),
     );

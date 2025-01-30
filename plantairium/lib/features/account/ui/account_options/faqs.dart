@@ -1,6 +1,5 @@
-// lib/features/faq/faq.dart
-
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:plantairium/common/utils/colors.dart';
 import 'package:plantairium/features/account/ui/account_options/faq_data.dart';
 
@@ -9,22 +8,38 @@ class FAQ extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final faqs = FAQData.faqs; // Recuperiamo la lista di FAQ
+    final faqs = FAQData.faqs;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('FAQs'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black87),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16.0),
-        itemCount: faqs.length,
-        itemBuilder: (context, index) {
-          final faqItem = faqs[index];
-          return FAQCard(
-            question: faqItem['question']!,
-            answer: faqItem['answer']!,
-          );
-        },
+      body: Column(
+        children: [
+          Align(
+            alignment: Alignment.center,
+            child: SizedBox(
+              height: 220,
+              child: Lottie.asset("assets/lottie/faq_green.json"),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(12.0),
+              itemCount: faqs.length,
+              itemBuilder: (context, index) {
+                final faqItem = faqs[index];
+                return FAQCard(
+                  question: faqItem['question'] ?? '',
+                  answer: faqItem['answer'] ?? '',
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -43,31 +58,41 @@ class FAQCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Palette.primary,
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              question,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
+      color: const Color(0xFFDDE8D7), // Verde salvia chiaro
+      elevation: 1.5,
+      margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: ExpansionTile(
+        collapsedShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          side: BorderSide(color: Colors.transparent),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          side: BorderSide(color: Colors.transparent),
+        ),
+        iconColor: Palette.iconsColor,
+        title: Text(
+          question,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(14.0),
+            child: Text(
               answer,
               style: const TextStyle(
-                fontSize: 16,
-                color: Colors.white,
+                fontSize: 14,
+                color: Colors.black87,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

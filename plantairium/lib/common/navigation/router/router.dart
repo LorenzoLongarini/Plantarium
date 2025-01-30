@@ -81,9 +81,12 @@ final GoRouter router = GoRouter(
       name: AppRoute.plants.name,
       builder: (BuildContext context, GoRouterState state) {
         final int sensorId = int.parse(state.pathParameters['id']!);
-        final Map<String, dynamic> sensorFeatures = state.extra as Map<String, dynamic>? ?? {};
-        
-        return PlantsView(idSensore: sensorId, sensorFeatures:sensorFeatures);
+        final Map<String, dynamic> sensorFeatures = 
+          (state.extra != null && state.extra is Map<String, dynamic>) 
+              ? state.extra as Map<String, dynamic> 
+              : {};
+
+        return PlantsView(idSensore: sensorId, sensorFeatures: sensorFeatures);
       },
     ),
     

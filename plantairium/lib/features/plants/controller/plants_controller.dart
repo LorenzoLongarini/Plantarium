@@ -4,7 +4,6 @@ import 'package:plantairium/features/plants/services/plants_api_service.dart';
 final plantsControllerProvider =
     StateNotifierProvider.family<PlantsController, AsyncValue<List<dynamic>>, int>(
   (ref, idSensore) {
-    print("📢 [DEBUG] Creazione del PlantsController per IdSensore: $idSensore");
     return PlantsController(ref, idSensore);
   },
 );
@@ -21,12 +20,9 @@ class PlantsController extends StateNotifier<AsyncValue<List<dynamic>>> {
 
   Future<void> fetchPlants() async {
     try {
-      print("📤 [DEBUG] Chiamata fetchPlants() per IdSensore: $idSensore...");
       final plants = await _plantsService.fetchPlants(idSensore: idSensore);
-      print("✅ [DEBUG] Piante ricevute: $plants");
       state = AsyncValue.data(plants);
     } catch (e, stacktrace) {
-      print("❌ [DEBUG] Errore fetchPlants(): $e");
       state = AsyncValue.error(e, stacktrace);
     }
   }

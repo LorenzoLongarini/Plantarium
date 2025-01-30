@@ -6,26 +6,18 @@ class PlantsService {
   final String apiUrl = EnvVars.lambdaApi; 
 
 Future<List<dynamic>> fetchPlants({int? idSensore}) async {
-    var url = '';
-  if (idSensore == null) {
-     url = '$apiUrl/pianta';
-  } else {
-   url = '$apiUrl/pianta?IdSensore=$idSensore';
-  }
-  print('📤 [DEBUG] Chiamata API: $url');
+  final url = idSensore == null 
+      ? '$apiUrl/pianta' // 🔹 Forziamo IdSensore=0 se non specificato
+      : '$apiUrl/pianta?IdSensore=$idSensore';
+
 
   final response = await http.get(Uri.parse(url));
-
-  print('📥 [DEBUG] Risposta API: ${response.statusCode}');
-  print('📥 [DEBUG] Corpo della risposta: ${response.body}');
 
   if (response.statusCode == 200) {
     final decoded = jsonDecode(response.body);
     final data = decoded['piante'];
-    print('✅ [DEBUG] Dati ricevuti dal server: $data');
     return data;
   } else {
-    print('❌ [DEBUG] Errore API: ${response.statusCode} - ${response.body}');
     throw Exception('Errore durante il fetch delle piante');
   }
 }

@@ -6,10 +6,12 @@ import 'package:plantairium/common/utils/colors.dart';
 import 'package:plantairium/features/account/ui/account.dart';
 import 'package:plantairium/features/plants/ui/plant.dart';
 import 'package:plantairium/features/sensors/ui/sensors.dart';
+
 class Base extends StatefulWidget {
   const Base({super.key, this.title, this.signupData});
   final String? title;
   final SignupData? signupData;
+
   @override
   State<Base> createState() => _BaseState();
 }
@@ -17,6 +19,7 @@ class Base extends StatefulWidget {
 class _BaseState extends State<Base> {
   int _currentPage = 0;
   final PageController _controller = PageController(initialPage: 0);
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -24,9 +27,7 @@ class _BaseState extends State<Base> {
         resizeToAvoidBottomInset: false,
         body: Padding(
           padding: const EdgeInsets.all(10),
-          // height: MediaQuery.of(context).size.height - 200,
           child: PageView(
-            // physics: constNeverScrollableScrollPhysics(),
             controller: _controller,
             children: const [
               SensorsView(),
@@ -42,7 +43,6 @@ class _BaseState extends State<Base> {
           backgroundColor: Palette.primary,
           onPressed: () {
             context.goNamed(AppRoute.chatbot.name);
-
           },
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
@@ -51,7 +51,8 @@ class _BaseState extends State<Base> {
             color: Palette.white,
           ),
         ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButtonLocation:
+            FloatingActionButtonLocation.endFloat, // Cambiato a endFloat
         bottomNavigationBar: BottomAppBar(
           elevation: 10,
           shadowColor: Palette.primary,
@@ -63,7 +64,7 @@ class _BaseState extends State<Base> {
           shape: const CircularNotchedRectangle(),
           child: Row(
             mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               IconButton(
                 icon: Icon(
@@ -78,36 +79,6 @@ class _BaseState extends State<Base> {
                   });
                 },
               ),
-              // IconButton(
-              //   icon: Icon(
-              //     Icons.favorite,
-              //     color:
-              //         _currentPage == 1 ? Palette.primary : Palette.deselected,
-              //   ),
-              //   onPressed: () {
-              //     setState(() {
-              //       _currentPage = 1;
-              //       _controller.jumpToPage(_currentPage);
-              //     });
-              //   },
-              // ),
-              const SizedBox(
-                width: 50,
-              ),
-              // IconButton(
-              //   icon: Icon(
-              //     Icons.chat,
-              //     color:
-              //         _currentPage == 2 ? Palette.primary : Palette.deselected,
-              //   ),
-              //   isSelected: true,
-              //   onPressed: () {
-              //     setState(() {
-              //       _currentPage = 2;
-              //       _controller.jumpToPage(_currentPage);
-              //     });
-              //   },
-              // ),
               IconButton(
                 icon: Icon(
                   Icons.person,

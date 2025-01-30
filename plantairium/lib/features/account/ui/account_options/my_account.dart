@@ -6,6 +6,7 @@ import 'package:plantairium/common/navigation/router/routes.dart';
 import 'package:plantairium/common/ui/custom_widgets/button/custom_material_button.dart';
 import 'package:plantairium/common/ui/custom_widgets/text_field/textfield.dart';
 import 'package:plantairium/features/account/controller/account_controller.dart';
+import 'package:plantairium/common/utils/colors.dart';
 
 class MyAccount extends StatelessWidget {
   const MyAccount({
@@ -24,92 +25,91 @@ class MyAccount extends StatelessWidget {
         TextEditingController(text: userInfos[AuthUserAttributeKey.familyName]);
     TextEditingController emailController =
         TextEditingController(text: userInfos[AuthUserAttributeKey.email]);
-    TextEditingController phoneController = TextEditingController(
-        text: userInfos[AuthUserAttributeKey.phoneNumber]);
+
     return Scaffold(
         appBar: AppBar(
-          title: const Text('My Account'),
+          title: const Text('Il Mio Account'),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          iconTheme: const IconThemeData(color: Colors.black87),
         ),
         body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const CircleAvatar(
-                radius: 70,
-                backgroundColor: Color.fromARGB(255, 64, 120, 27),
-                child: CircleAvatar(
-                  radius: 65,
-                  backgroundImage: AssetImage('assets/img/default-avatar.jpg'),
-                ),
-              ),
-              const SizedBox(
-                height: 30,
-              ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              Stack(
+                alignment: Alignment.center,
                 children: [
-                  CustomTextField(
-                    labelText: 'Nickname',
-                    prefixIcon: const Icon(Icons.person),
-                    backgroundColor: const Color.fromARGB(255, 244, 244, 244),
-                    controller: nicknameController,
-                    onChanged: (value) =>
-                        userInfos[AuthUserAttributeKey.nickname] = value,
+                  const CircleAvatar(
+                    radius: 90,
+                    backgroundColor: Color.fromARGB(255, 64, 120, 27),
+                    backgroundImage: AssetImage('assets/img/avatarlollo.png'),
                   ),
-                  CustomTextField(
-                    labelText: 'Nome',
-                    prefixIcon: const Icon(Icons.person),
-                    backgroundColor: const Color.fromARGB(255, 244, 244, 244),
-                    controller: nameController,
-                    onChanged: (value) =>
-                        userInfos[AuthUserAttributeKey.name] = value,
-                  ),
-                  CustomTextField(
-                    labelText: 'Cognome',
-                    prefixIcon: const Icon(Icons.person),
-                    backgroundColor: const Color.fromARGB(255, 244, 244, 244),
-                    controller: surnameController,
-                    onChanged: (value) =>
-                        userInfos[AuthUserAttributeKey.familyName] = value,
-                  ),
-                  CustomTextField(
-                    labelText: 'Email',
-                    prefixIcon: const Icon(Icons.email),
-                    backgroundColor: const Color.fromARGB(255, 244, 244, 244),
-                    controller: emailController,
-                    onChanged: (value) =>
-                        userInfos[AuthUserAttributeKey.email] = value,
-                  ),
-                  CustomTextField(
-                    labelText: 'Phone Number',
-                    prefixIcon: const Icon(Icons.phone),
-                    backgroundColor: const Color.fromARGB(255, 244, 244, 244),
-                    controller: phoneController,
-                    onChanged: (value) =>
-                        userInfos[AuthUserAttributeKey.phoneNumber] = value,
+                  Container(
+                    width: 180,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withOpacity(0.5),
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(
-                height: 30,
+              const SizedBox(height: 30),
+              CustomTextField(
+                labelText: 'Nickname',
+                prefixIcon: const Icon(Icons.person),
+                backgroundColor: Palette.lightGreen,
+                controller: nicknameController,
+                onChanged: (value) =>
+                    userInfos[AuthUserAttributeKey.nickname] = value,
               ),
-              Consumer(
-                builder: (context, ref, child) {
-                  return CustomMaterialButton(
-                    title: 'Conferma',
-                    onPressed: () {
-                      userInfos.forEach((key, value) async {
-                        try {
-                          ref
-                              .read(accountControllerProvider.notifier)
-                              .updateUserInfos(key: key, value: value);
-                        } on AuthException catch (e) {
-                          safePrint(e);
-                        }
-                      });
-                      context.goNamed(AppRoute.home.name);
-                    },
-                  );
-                },
+              CustomTextField(
+                labelText: 'Nome',
+                prefixIcon: const Icon(Icons.person),
+                backgroundColor: Palette.lightGreen,
+                controller: nameController,
+                onChanged: (value) =>
+                    userInfos[AuthUserAttributeKey.name] = value,
+              ),
+              CustomTextField(
+                labelText: 'Cognome',
+                prefixIcon: const Icon(Icons.person),
+                backgroundColor: Palette.lightGreen,
+                controller: surnameController,
+                onChanged: (value) =>
+                    userInfos[AuthUserAttributeKey.familyName] = value,
+              ),
+              CustomTextField(
+                labelText: 'Email',
+                prefixIcon: const Icon(Icons.email),
+                backgroundColor: Palette.lightGreen,
+                controller: emailController,
+                onChanged: (value) =>
+                    userInfos[AuthUserAttributeKey.email] = value,
+              ),
+              const SizedBox(height: 30),
+              Center(
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    return CustomMaterialButton(
+                      title: 'Modifica',
+                      onPressed: () {
+                        userInfos.forEach((key, value) async {
+                          try {
+                            ref
+                                .read(accountControllerProvider.notifier)
+                                .updateUserInfos(key: key, value: value);
+                          } on AuthException catch (e) {
+                            safePrint(e);
+                          }
+                        });
+                        context.goNamed(AppRoute.home.name);
+                      },
+                    );
+                  },
+                ),
               )
             ],
           ),
