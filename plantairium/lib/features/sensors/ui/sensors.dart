@@ -15,7 +15,13 @@ class SensorsView extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gestione Sensori'),
+        title: Text(
+          'I tuoi Sensori',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Palette.primary,
+          ),
+        ),
         actions: [
           IconButton(
             icon: Icon(
@@ -79,8 +85,14 @@ class SensorsView extends ConsumerWidget {
                         child: ListTile(
                           leading: Image.asset('assets/img/sensor.png',
                               fit: BoxFit.cover),
-                          title: Text(sensor['Nome'] as String? ?? ''),
-                          subtitle: Text('ID Utente: ${sensor['IdUtente']}'),
+                          title: Text(
+                            sensor['Nome'] as String? ?? '',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          subtitle: Text(
+                              'Data Installazione: ${sensor['DataInstallazione']}'),
                           trailing: IconButton(
                             icon: Icon(Icons.edit, color: Palette.primary),
                             tooltip: 'Modifica Sensore',
@@ -100,8 +112,11 @@ class SensorsView extends ConsumerWidget {
                               pathParameters: {
                                 'id': sensorId.toString()
                               }, // ✅ Passiamo solo l'ID qui
-                              extra: sensor[
-                                  'Features'], // ✅ Passiamo le "Features" come extra
+                              extra: {
+                                'sensorFeatures': sensor['Features'],
+                                'sensorName': sensor['Nome'],
+                                'sensorDate': sensor['DataInstallazione'],
+                              },
                             );
                           },
                         ),

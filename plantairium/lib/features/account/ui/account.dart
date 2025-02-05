@@ -73,7 +73,7 @@ class _AccountState extends ConsumerState<Account> {
                 CustomListTile(
                   icon: Icons.person,
                   iconColor: Palette.primary,
-                  text: 'My Profile',
+                  text: 'Modifica Profilo',
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(

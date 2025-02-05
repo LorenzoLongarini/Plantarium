@@ -6,9 +6,7 @@ import 'package:plantairium/common/utils/env_vars.dart';
 final sensorServiceProvider = Provider((ref) => SensorService());
 
 class SensorService {
-  final String baseUrl = EnvVars.lambdaApi; 
-
-
+  final String baseUrl = EnvVars.lambdaApi;
 
   Future<List<dynamic>> getSensors() async {
     final response = await http.get(Uri.parse('$baseUrl/sensore'));
@@ -35,7 +33,8 @@ class SensorService {
     }
   }
 
-  Future<void> updateSensor(int id, String nome, Map<String, dynamic> features) async {
+  Future<void> updateSensor(
+      int id, String nome, Map<String, dynamic> features) async {
     final response = await http.put(
       Uri.parse('$baseUrl/sensore/$id'),
       headers: {'Content-Type': 'application/json'},
@@ -51,17 +50,32 @@ class SensorService {
   }
 
   Future<void> deleteSensor(int id) async {
-  final response = await http.delete(
-    Uri.parse('$baseUrl/sensore'), // Rimuovi l'ID dall'URL
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({"id": id}), // Passa l'ID nel body
-  );
+    final response = await http.delete(
+      Uri.parse('$baseUrl/sensore'), //
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({"Id": id}), //
+    );
 
-  print('DELETE status code: ${response.statusCode}');
-  print('DELETE response body: ${response.body}');
+    print('DELETE status code: ${response.statusCode}');
+    print('DELETE response body: ${response.body}');
 
-  if (response.statusCode != 200 && response.statusCode != 204) {
-    throw Exception('Errore durante l\'eliminazione del sensore');
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception('Errore durante l\'eliminazione del sensore');
+    }
   }
-}
+
+  Future<void> requestInference(int sensorId, String featureName) async {
+    final response = await http.post(
+      Uri.parse('${EnvVars.inferenceApi}/inferencemodel'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        "IdSensore": sensorId,
+        "FeatureName": featureName,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Errore richiesta inferenza');
+    }
+  }
 }

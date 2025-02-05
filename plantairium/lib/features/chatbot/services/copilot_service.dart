@@ -10,15 +10,18 @@ final copilotServiceProvider = Provider<CopilotService>((ref) {
 });
 
 class CopilotService {
-  final String copilotApiUrl = "https://models.inference.ai.azure.com/chat/completions";
+  final String copilotApiUrl =
+      "https://models.inference.ai.azure.com/chat/completions";
   final String githubToken = EnvVars.copilotKey;
 
-  Future<String> generateResponse(String prompt, [String faqContext = ""]) async {
+  Future<String> generateResponse(String prompt,
+      [String faqContext = "", String plantContext = ""]) async {
     final headers = {
       'Authorization': 'Bearer $githubToken',
       'Content-Type': 'application/json',
       'X-GitHub-Api-Version': '2022-11-28',
     };
+    Set<String> context;
 
     final body = jsonEncode({
       "model": "gpt-4o",
@@ -26,28 +29,27 @@ class CopilotService {
         {
           "role": "system",
           "content": """
-Sei un assistente specializzato in piante e sensori.
-${faqContext.isNotEmpty ? "Queste sono alcune FAQ fornite:\n$faqContext\n" : ""}
-Rispondi in modo chiaro e coerente alla domanda dell'utente.
-"""
+            Sei un assistente specializzato in piante e sensori.
+            ${faqContext.isNotEmpty ? "Queste sono alcune FAQ fornite:\n$faqContext\n" : ""}
+            ${plantContext.isNotEmpty ? "Queste sono alcune informazioni riguardo una pianta:\n$faqContext\n" : ""}
+            Rispondi in modo chiaro e coerente alla domanda dell'utente.
+            """
         },
-        {
-          "role": "user",
-          "content": prompt
-        }
+        {"role": "user", "content": prompt}
       ],
       "temperature": 1,
       "max_tokens": 4096,
       "top_p": 1,
     });
 
-    final response = await http.post(Uri.parse(copilotApiUrl), headers: headers, body: body);
+    final response =
+        await http.post(Uri.parse(copilotApiUrl), headers: headers, body: body);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return data['choices'][0]['message']['content'];
     } else {
-      throw Exception('Errore durante la chiamata a Copilot: ${response.body}');
+      throw Exception('Error: ${response.body}');
     }
   }
 }

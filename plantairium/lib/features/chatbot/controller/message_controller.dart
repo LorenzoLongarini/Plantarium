@@ -6,7 +6,8 @@ import 'package:plantairium/features/account/ui/account_options/faq_data.dart';
 import 'package:plantairium/features/chatbot/services/copilot_service.dart';
 import 'package:plantairium/features/chatbot/services/message_service.dart';
 
-final messagesControllerProvider = StateNotifierProvider<MessagesController, AsyncValue<List<dynamic>>>((ref) {
+final messagesControllerProvider =
+    StateNotifierProvider<MessagesController, AsyncValue<List<dynamic>>>((ref) {
   return MessagesController();
 });
 
@@ -18,7 +19,8 @@ class MessagesController extends StateNotifier<AsyncValue<List<dynamic>>> {
   final RegExp accentRegex = RegExp(r'[^\x00-\x7F]+');
 
   MessagesController() : super(const AsyncValue.loading()) {
-    fetchMessages(1); // Carichiamo all'avvio i messaggi per un utente (hardcoded in questo esempio)
+    fetchMessages(
+        1); // Carichiamo all'avvio i messaggi per un utente (hardcoded in questo esempio)
   }
 
   Future<void> fetchMessages(int idUtente) async {
@@ -44,12 +46,9 @@ class MessagesController extends StateNotifier<AsyncValue<List<dynamic>>> {
       };
       state = AsyncValue.data([...currentMessages, userMessage]);
 
-      // -----------------------------------------------------------------
-      // GESTIONE COMANDI: /faq e /plant
-      // -----------------------------------------------------------------
       String faqContext = "";
       String plantContext = "";
-      String actualPrompt = domanda; // testo utente eventualmente "ripulito"
+      String actualPrompt = domanda;
 
       if (domanda.startsWith("/faq")) {
         // Carichiamo tutte le FAQ come contesto
@@ -58,7 +57,6 @@ class MessagesController extends StateNotifier<AsyncValue<List<dynamic>>> {
         actualPrompt = domanda.replaceFirst("/faq", "").trim();
       }
 
-      // Esempio: /plant 123 (o /plant 123 Qualcosa)
       if (domanda.startsWith("/plant")) {
         // estraiamo l'id dopo "/plant "
         // Formato ipotetico: "/plant 123"
@@ -67,11 +65,7 @@ class MessagesController extends StateNotifier<AsyncValue<List<dynamic>>> {
           final maybeId = splitted[1];
           final idPianta = int.tryParse(maybeId);
           if (idPianta != null) {
-            // In realta' potresti:
-            // 1) Fare una chiamata HTTP per recuperare i dettagli della pianta
-            // 2) Oppure, se in Chatbot hai già la mappa pianta => details, potresti passare i suoi details
-            // Esempio veloce: passiamo un contesto generico
-            plantContext = "Informazioni per la pianta con ID $idPianta. (TODO: recuperare info reali)";
+            plantContext = "Informazioni per la pianta con ID $idPianta.";
             // Rimuoviamo "/plant <id>" dal prompt utente
             actualPrompt = domanda.replaceFirst("/plant $maybeId", "").trim();
           }
@@ -86,10 +80,12 @@ class MessagesController extends StateNotifier<AsyncValue<List<dynamic>>> {
       ].join("\n\n");
 
       // Ora passiamo "combinedContext" al copilotService come contesto extra
-      String risposta = await _copilotService.generateResponse(actualPrompt, combinedContext);
+      String risposta =
+          await _copilotService.generateResponse(actualPrompt, combinedContext);
 
       // Rimuoviamo emoji e caratteri speciali
-      risposta = risposta.replaceAll(emojiRegex, '').replaceAll(accentRegex, '');
+      risposta =
+          risposta.replaceAll(emojiRegex, '').replaceAll(accentRegex, '');
 
       // Aggiungiamo la risposta
       final aiMessage = {
@@ -104,7 +100,6 @@ class MessagesController extends StateNotifier<AsyncValue<List<dynamic>>> {
       // Salviamo i messaggi
       await _messageService.addMessage(idUtente, 'domanda', domanda);
       await _messageService.addMessage(idUtente, 'risposta', risposta);
-
     } catch (e) {
       state = AsyncValue.error(e, StackTrace.current);
     }

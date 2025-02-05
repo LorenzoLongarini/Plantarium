@@ -4,6 +4,7 @@ import 'package:plantairium/common/utils/colors.dart';
 import 'package:plantairium/features/plants/ui/plant_dialog.dart';
 import 'package:plantairium/features/report/controller/report_controller.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:share_plus/share_plus.dart';
 
 class PlantDetailView extends ConsumerWidget {
   final Map<String, dynamic> plant;
@@ -124,7 +125,7 @@ class PlantDetailView extends ConsumerWidget {
                       foregroundColor: Colors.white,
                     ),
                   ),
-                  if (pdfPath != null)
+                  if (pdfPath != null) ...[
                     TextButton.icon(
                       onPressed: () {
                         OpenFilex.open(pdfPath);
@@ -138,6 +139,22 @@ class PlantDetailView extends ConsumerWidget {
                         style: TextStyle(color: Palette.primary),
                       ),
                     ),
+                    TextButton.icon(
+                      onPressed: () {
+                        Share.shareXFiles([XFile(pdfPath)],
+                            text:
+                                "Ecco il report della pianta ${plant['Nome']}");
+                      },
+                      icon: Icon(
+                        Icons.share,
+                        color: Palette.primary,
+                      ),
+                      label: Text(
+                        "Condividi Report",
+                        style: TextStyle(color: Palette.primary),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

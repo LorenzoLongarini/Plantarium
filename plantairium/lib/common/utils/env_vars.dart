@@ -5,4 +5,5 @@ class EnvVars {
   static String get password => dotenv.get('PASSWORD');
   static String get lambdaApi => dotenv.get('LAMBDA_API');
   static String get copilotKey => dotenv.get('COPILOT_KEY');
+  static String get inferenceApi => dotenv.get('INFERENCE_API');
 }

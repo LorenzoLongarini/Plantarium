@@ -12,18 +12,25 @@ class SensorsController extends StateNotifier<AsyncValue<List<dynamic>>> {
     _loadSensors();
   }
 
-    Future<Map<String, dynamic>> fetchSensorData(int sensorId) async {
+  Future<Map<String, dynamic>> fetchSensorData(int sensorId) async {
     try {
       final sensors = await ref.read(sensorServiceProvider).getSensors();
-      final sensorData = sensors.firstWhere((sensor) => sensor['Id'] == sensorId, orElse: () => {});
-      state = AsyncData(sensorData);
+
+      final List<Map<String, dynamic>> sensorsList =
+          List<Map<String, dynamic>>.from(sensors);
+      final sensorData = sensorsList.firstWhere(
+        (sensor) => sensor['Id'] == sensorId,
+        orElse: () => <String, dynamic>{},
+      );
+
+      state = AsyncData([sensorData]);
       return sensorData;
     } catch (e) {
+      print("❌ Errore in fetchSensorData: $e");
       state = AsyncError(e, StackTrace.current);
       return {};
     }
   }
-
 
   Future<void> _loadSensors() async {
     try {
@@ -56,7 +63,18 @@ class SensorsController extends StateNotifier<AsyncValue<List<dynamic>>> {
   Future<void> deleteSensor(int id) async {
     try {
       await ref.read(sensorServiceProvider).deleteSensor(id);
-      // _loadSensors(); 
+      _loadSensors();
+    } catch (e) {
+      state = AsyncError(e, StackTrace.current);
+    }
+  }
+
+  Future<void> requestInference(int sensorId, String features) async {
+    try {
+      await ref
+          .read(sensorServiceProvider)
+          .requestInference(sensorId, features);
+      _loadSensors(); // Ricarica i sensori
     } catch (e) {
       state = AsyncError(e, StackTrace.current);
     }

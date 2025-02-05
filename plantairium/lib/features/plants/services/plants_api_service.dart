@@ -3,26 +3,23 @@ import 'package:http/http.dart' as http;
 import 'package:plantairium/common/utils/env_vars.dart';
 
 class PlantsService {
-  final String apiUrl = EnvVars.lambdaApi; 
+  final String apiUrl = EnvVars.lambdaApi;
 
-Future<List<dynamic>> fetchPlants({int? idSensore}) async {
-  final url = idSensore == null 
-      ? '$apiUrl/pianta' // 🔹 Forziamo IdSensore=0 se non specificato
-      : '$apiUrl/pianta?IdSensore=$idSensore';
+  Future<List<dynamic>> fetchPlants({int? idSensore}) async {
+    final url = idSensore == null
+        ? '$apiUrl/pianta' // 🔹 Forziamo IdSensore=0 se non specificato
+        : '$apiUrl/pianta?IdSensore=$idSensore';
 
+    final response = await http.get(Uri.parse(url));
 
-  final response = await http.get(Uri.parse(url));
-
-  if (response.statusCode == 200) {
-    final decoded = jsonDecode(response.body);
-    final data = decoded['piante'];
-    return data;
-  } else {
-    throw Exception('Errore durante il fetch delle piante');
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+      final data = decoded['piante'];
+      return data;
+    } else {
+      throw Exception('Errore durante il fetch delle piante');
+    }
   }
-}
-
-
 
   Future<void> addPlant({
     required int idSensore,
@@ -74,9 +71,12 @@ Future<List<dynamic>> fetchPlants({int? idSensore}) async {
 
   Future<void> deletePlant(int id) async {
     final response = await http.delete(
-      Uri.parse('$apiUrl?Id=$id'),
+      Uri.parse('$apiUrl/pianta'), // Endpoint aggiornato
+      headers: {'Content-Type': 'application/json'},
+      body:
+          jsonEncode({"Id": id}), // Passaggio dell'ID nel corpo della richiesta
     );
-    if (response.statusCode != 200) {
+    if (response.statusCode != 200 && response.statusCode != 204) {
       throw Exception('Errore durante l\'eliminazione della pianta');
     }
   }

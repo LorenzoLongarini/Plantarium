@@ -17,7 +17,7 @@ final GoRouter router = GoRouter(
   refreshListenable: authNotifier,
   routes: <RouteBase>[
     GoRoute(
-        redirect: (context, state) {
+      redirect: (context, state) {
         final isLoggedIn = authNotifier.isSignedIn;
 
         if (!isLoggedIn) {
@@ -39,7 +39,7 @@ final GoRouter router = GoRouter(
           name: AppRoute.myaccount.name,
           builder: (BuildContext context, GoRouterState state) {
             Map<AuthUserAttributeKey, String?> userInfos =
-                state.extra as Map<AuthUserAttributeKey, String?> ;
+                state.extra as Map<AuthUserAttributeKey, String?>;
             return MyAccount(
               userInfos: userInfos,
             );
@@ -58,18 +58,19 @@ final GoRouter router = GoRouter(
       name: AppRoute.chatbot.name,
       builder: (BuildContext context, GoRouterState state) {
         // final int userId = int.parse(state.pathParameters['id']|);
-        return  Chatbot(userId: 1,);
+        return Chatbot(
+          userId: 1,
+        );
       },
     ),
-     GoRoute(
+    GoRoute(
       path: '/sensors',
       name: AppRoute.sensors.name,
       builder: (BuildContext context, GoRouterState state) {
         return const SensorsView();
       },
     ),
-    
-     GoRoute(
+    GoRoute(
       path: '/sensor',
       name: AppRoute.sensor.name,
       builder: (BuildContext context, GoRouterState state) {
@@ -81,15 +82,21 @@ final GoRouter router = GoRouter(
       name: AppRoute.plants.name,
       builder: (BuildContext context, GoRouterState state) {
         final int sensorId = int.parse(state.pathParameters['id']!);
-        final Map<String, dynamic> sensorFeatures = 
-          (state.extra != null && state.extra is Map<String, dynamic>) 
-              ? state.extra as Map<String, dynamic> 
-              : {};
+        final Map<String, dynamic> extra =
+            state.extra as Map<String, dynamic>? ?? {};
+        final String sensorName = extra['sensorName'] as String? ?? '';
+        final String sensorDate = extra['sensorDate'] as String? ?? '';
+        final Map<String, dynamic> sensorFeatures =
+            extra['sensorFeatures'] as Map<String, dynamic>? ?? {};
 
-        return PlantsView(idSensore: sensorId, sensorFeatures: sensorFeatures);
+        return PlantsView(
+          idSensore: sensorId,
+          sensorFeatures: sensorFeatures,
+          sensorName: sensorName,
+          sensorDate: sensorDate,
+        );
       },
     ),
-    
     GoRoute(
       path: '/login',
       name: AppRoute.login.name,
@@ -97,7 +104,6 @@ final GoRouter router = GoRouter(
         return Login(key: UniqueKey());
       },
     ),
-    
   ],
   errorBuilder: (context, state) => Scaffold(
     body: Center(

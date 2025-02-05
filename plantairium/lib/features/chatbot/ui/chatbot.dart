@@ -87,11 +87,11 @@ class _ChatbotState extends ConsumerState<Chatbot> {
         .read(messagesControllerProvider.notifier)
         .sendMessage(widget.userId, text);
 
+    _controller.clear();
     setState(() {
       isWaitingForResponse = false;
     });
 
-    _controller.clear();
     _scrollToBottom();
   }
 
@@ -259,7 +259,8 @@ class _ChatbotState extends ConsumerState<Chatbot> {
               ),
               label: Text("/plant $id $nome"),
               onPressed: () {
-                _replaceLastSlashWith("/plant $id ");
+                _replaceLastSlashWith("/plant $nome",
+                    name: plant['Nome'], description: plant['Descrizione']);
               },
             ),
           );
@@ -269,7 +270,8 @@ class _ChatbotState extends ConsumerState<Chatbot> {
   }
 
   /// Rimpiazza l'ultimo "/" con la stringa [replacement] (es. "/faq " o "/plant 1 ")
-  void _replaceLastSlashWith(String replacement) {
+  void _replaceLastSlashWith(String replacement,
+      {String? description, String? name}) {
     final currentText = _controller.text;
     if (currentText.endsWith('/')) {
       final textWithoutSlash = currentText.substring(0, currentText.length - 1);
@@ -281,6 +283,11 @@ class _ChatbotState extends ConsumerState<Chatbot> {
       setState(() {
         _showSlashSuggestions = false;
       });
+    }
+    if (replacement.startsWith("/plant")) {
+      if (name != null && description != null) {
+        _handleSendMessage(name + description);
+      }
     }
   }
 }
